@@ -244,11 +244,20 @@ public class Manager {
 
         //NO PERMITIMOS QUE EL USUARIO CREE EL NUMERO DE LA CUENTA CLIENTE,
         // YA QUE ESTE DATO TIENE QUE SER CREADO POR EL BANCO
-        this.currentClient.setAccount(new CheckingAccount(123456789,0));
+        this.currentClient.setAccount(new CheckingAccount(generateRandomId(),0));
 
         System.out.println("¡Cliente registrado exitosamente!");
         System.out.println("----------------");
 
+    }
+
+    private long generateRandomId() {
+        long randomNumber = (long) (Math.random() * 1_000_000_000L);
+
+        while (randomNumber < 100_000_000L) {
+            randomNumber = (long) (Math.random() * 1_000_000_000L);
+        }
+        return randomNumber;
     }
 
     private void showClientInfo() {
