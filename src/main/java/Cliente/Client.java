@@ -1,6 +1,7 @@
 package Cliente;
 
-import CuentaCorriente.CheckingAccount;
+import Account.Account;
+import Account.CheckingAccount;
 
 public class Client {
 
@@ -17,7 +18,7 @@ public class Client {
 
     private long phone;
 
-    private CheckingAccount account;
+    private Account account;
 
     public Client(String rut, String names, String firstLastName, String secondLastName, String address, String commune, long phone, CheckingAccount account) {
         this.rut = rut;
@@ -31,7 +32,7 @@ public class Client {
     }
 
     public Client() {
-        this.setAccount(new CheckingAccount(0,0));
+        this.setAccount(new CheckingAccount());
     }
 
     public String getRut() {
@@ -90,11 +91,11 @@ public class Client {
         this.phone = phone;
     }
 
-    public CheckingAccount getAccount() {
+    public Account getAccount() {
         return account;
     }
 
-    public void setAccount(CheckingAccount account) {
+    public void setAccount(Account account) {
         this.account = account;
     }
 

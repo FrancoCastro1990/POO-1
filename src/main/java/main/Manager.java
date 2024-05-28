@@ -1,11 +1,13 @@
 package main;
 
+import Account.CreditAccount;
+import Account.SavingAccount;
 import Cliente.Client;
-import CuentaCorriente.CheckingAccount;
+import Account.CheckingAccount;
 
 import java.util.Scanner;
 
-public class Manager {
+public class Manager implements ClientInfo{
 
     private Client currentClient;
 
@@ -18,11 +20,21 @@ public class Manager {
         int option;
         System.out.println("Bienvenido a la gestion de Clientes de  Bank Boston");
         do {
-            option = 0; //limpiamos la variable
+            option = 0;
+            System.out.println("----------------");
             System.out.println("[1] Registrar cliente");
             System.out.println("[2] Ver datos de cliente");
-            System.out.println("[3] Depositar");
-            System.out.println("[4] Girar");
+
+            if(currentClient.getAccount().getId()!=0) {
+                if(currentClient.getAccount() instanceof CreditAccount){
+                    System.out.println("[3] Pagar credito");
+                    System.out.println("[4] Comprar producto");
+                } else {
+                    System.out.println("[3] Depositar");
+                    System.out.println("[4] Girar");
+                }
+
+            }
             System.out.println("[5] Salir");
             System.out.println("ingresa una opcion: ");
             try{
@@ -47,14 +59,25 @@ public class Manager {
                         break;
                     case 3:
                         if(currentClient.getAccount().getId()!=0) {
-                            deposit();
+                            add();
                         } else {
                             System.out.println("Debe registrar un cliente primero.");
                         }
                         break;
                     case 4:
                         if(currentClient.getAccount().getId()!=0) {
-                            transfer();
+                            if((currentClient.getAccount() instanceof CreditAccount)) {
+                                deduct();
+                            } else {
+                                if(currentClient.getAccount().getBalance()>0) {
+                                    deduct();
+                                } else {
+                                    System.out.println("No puede girar si no tiene saldo.");
+                                    System.out.println("----------------");
+
+                                    break;
+                                }
+                            }
                         } else {
                             System.out.println("Debe registrar un cliente primero.");
                         }
@@ -70,154 +93,61 @@ public class Manager {
     private void registerUser() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("----------------");
-        System.out.println("Ingresa los datos del cliente");
+        System.out.println("Ingresa los datos del nuevo cliente");
 
-        //RUT
-        String rut = "";
+        this.currentClient.setRut(getValidString("Rut", scanner, 10, 13));
+        this.currentClient.setNames(getValidString("Nombre", scanner));
+        this.currentClient.setFirstLastName(getValidString("Apellido Paterno", scanner));
+        this.currentClient.setSecondLastName(getValidString("Apellido Materno", scanner));
+        this.currentClient.setAddress(getValidString("Direccion", scanner));
+        this.currentClient.setCommune(getValidString("Comuna", scanner));
+        addUserPhone(scanner);
+        addUserAccount(scanner);
 
+        System.out.println("¡Cliente registrado exitosamente!");
+        System.out.println("----------------");
+    }
+
+    private void addUserAccount(Scanner scanner) {
+        int accountType = 0;
         do{
-            System.out.println("Ingrese el rut:");
+            System.out.println("Seleccione el tipo de cuenta a crear.");
+            System.out.println("[1] Cuenta corriente");
+            System.out.println("[2] Cuenta de ahorro");
+            System.out.println("[3] Cuenta de credito");
 
             try{
-                rut = scanner.nextLine();
+                accountType = scanner.nextInt();
             } catch (Exception error) {
                 scanner.nextLine();
-                System.out.println("Ingrese un rut valido.");
+                System.out.println("Ingrese una opcion valida.");
             }
 
-            if(rut.length()<10 || rut.length()>13) {
-                System.out.println("Ingrese un rut valido.");
+            if (accountType<1 || accountType>3) {
+                System.out.println("Ingrese una opcion valida.");
             }
 
-        } while (rut.length()<10 || rut.length()>13);
-
-        this.currentClient.setRut(rut);
+        } while (accountType<1 || accountType>3);
 
 
-        //NOMBRE
-        String names = "";
-
-        do{
-            System.out.println("Ingrese su nombre:");
-
-            try{
-
-                names = scanner.nextLine();
-
-            } catch (Exception error) {
-
-                scanner.nextLine();
-                System.out.println("Ingrese un nombre valido.");
-
+        switch (accountType) {
+            case 1: {
+                this.currentClient.setAccount(new CheckingAccount(generateRandomId(), 0));
+                break;
+            }
+            case 2: {
+                this.currentClient.setAccount(new SavingAccount(generateRandomId(), 0, 0.08));
+                break;
+            }
+            case 3:{
+                this.currentClient.setAccount(new CreditAccount(generateRandomId(), 600000));
+                break;
             }
 
-            if (names.isEmpty()) {
-                System.out.println("Ingrese un nombre valido.");
-            }
+        }
+    }
 
-        } while (names.isEmpty());
-
-        this.currentClient.setNames(names);
-
-        //APELLIDO PATERNO
-        String firstLastName = "";
-        do{
-            System.out.println("Ingrese su apellido paterno:");
-
-            try{
-
-                firstLastName = scanner.nextLine();
-
-            } catch (Exception error) {
-
-                scanner.nextLine();
-                System.out.println("Ingrese un apellido valido.");
-
-            }
-
-            if (firstLastName.isEmpty()) {
-                System.out.println("Ingrese un apellido.");
-            }
-
-        } while (firstLastName.isEmpty());
-
-        this.currentClient.setFirstLastName(firstLastName);
-
-
-        //APELLIDO MATERNO
-        String secondLastName = "";
-        do{
-            System.out.println("Ingrese su apellido materno:");
-
-            try{
-
-                secondLastName = scanner.nextLine();
-
-            } catch (Exception error) {
-
-                scanner.nextLine();
-                System.out.println("Ingrese un apellido valido.");
-
-            }
-
-            if (secondLastName.isEmpty()) {
-                System.out.println("Ingrese un apellido.");
-            }
-
-        } while (secondLastName.isEmpty());
-
-        this.currentClient.setSecondLastName(secondLastName);
-
-
-        //DIRECCION
-        String adress = "";
-        do{
-            System.out.println("Ingrese su domicilio:");
-
-            try{
-
-                adress = scanner.nextLine();
-
-            } catch (Exception error) {
-
-                scanner.nextLine();
-                System.out.println("Ingrese un domicilio.");
-
-            }
-
-            if (adress.isEmpty()) {
-                System.out.println("Ingrese un domicilio.");
-            }
-
-        } while (adress.isEmpty());
-
-        this.currentClient.setAddress(adress);
-
-        //COMUNA
-        String commune = "";
-        do{
-            System.out.println("Ingrese su comuna:");
-
-            try{
-
-                commune = scanner.nextLine();
-
-            } catch (Exception error) {
-
-                scanner.nextLine();
-                System.out.println("Ingrese una comuna.");
-
-            }
-
-            if (commune.isEmpty()) {
-                System.out.println("Ingrese una comuna.");
-            }
-
-        } while (commune.isEmpty());
-
-        this.currentClient.setCommune(commune);
-
-        //phone
+    private void addUserPhone(Scanner scanner) {
         long phone = 0;
         do{
             System.out.println("Ingrese su numero de telefono (ejemplo: 986107382):");
@@ -240,16 +170,46 @@ public class Manager {
         } while (phone<111111111 || phone>999999999);
 
         this.currentClient.setPhone(phone);
-
-
-        //NO PERMITIMOS QUE EL USUARIO CREE EL NUMERO DE LA CUENTA CLIENTE,
-        // YA QUE ESTE DATO TIENE QUE SER CREADO POR EL BANCO
-        this.currentClient.setAccount(new CheckingAccount(generateRandomId(),0));
-
-        System.out.println("¡Cliente registrado exitosamente!");
-        System.out.println("----------------");
-
     }
+
+    private String getValidString(String field, Scanner scanner){
+        String input = "";
+        do{
+            System.out.println("Ingrese su "+field+": ");
+            try{
+                input = scanner.nextLine();
+            } catch (Exception error) {
+                scanner.nextLine();
+                System.out.println("Ingrese un "+field+" valido.");
+            }
+
+            if (input.isEmpty()) {
+                System.out.println("Ingrese un "+field+" valido.");
+            }
+
+        } while (input.isEmpty());
+        return input;
+    }
+
+    private String getValidString(String field, Scanner scanner, int min, int max){
+        String input = "";
+        do{
+            System.out.println("Ingrese su "+field+": ");
+            try{
+                input = scanner.nextLine();
+            } catch (Exception error) {
+                scanner.nextLine();
+                System.out.println("Ingrese un "+field+" valido.");
+            }
+
+            if (input.length()<min || input.length()>max) {
+                System.out.println("Ingrese un "+field+" valido.");
+            }
+
+        } while (input.length()<min || input.length()>max);
+        return input;
+    }
+
 
     private long generateRandomId() {
         long randomNumber = (long) (Math.random() * 1_000_000_000L);
@@ -260,7 +220,7 @@ public class Manager {
         return randomNumber;
     }
 
-    private void showClientInfo() {
+    public void showClientInfo() {
         System.out.println("----------------");
         System.out.println("Datos del Cliente");
         System.out.println("Rut: "+currentClient.getRut());
@@ -270,18 +230,25 @@ public class Manager {
         System.out.println("Direccion: "+currentClient.getAddress());
         System.out.println("Comuna: "+currentClient.getCommune());
         System.out.println("Numero de cuenta: "+currentClient.getAccount().getId());
+        if(currentClient.getAccount() instanceof CreditAccount) {
+            long creditLimit = ((CreditAccount) currentClient.getAccount()).getCreditLimit();
+            System.out.println("Limite de credito: "+creditLimit);
+        }
+        if(currentClient.getAccount() instanceof SavingAccount) {
+            long limitDeduct = ((SavingAccount) currentClient.getAccount()).getLimitDeduct();
+            System.out.println("Limite de retiros: "+limitDeduct);
+        }
         System.out.println("Saldo: $"+currentClient.getAccount().getBalance());
         System.out.println("----------------");
-
     }
-    private void deposit() {
+    private void add() {
         Scanner scanner = new Scanner(System.in);
 
         int money = 0;
 
         do{
             System.out.println("----------------");
-            System.out.println("Ingrese un monto para depositar: ");
+            System.out.println("Ingrese un valor: ");
             try{
                 money = scanner.nextInt();
             } catch (Exception error) {
@@ -295,20 +262,17 @@ public class Manager {
 
         } while (money<= 0);
 
-        this.currentClient.getAccount().toDeposit(money);
-        System.out.println("¡Depósito realizado de manera exitosa!");
-        System.out.println("Usted tiene un saldo actual de "+currentClient.getAccount().getBalance()+" pesos.");
-        System.out.println("----------------");
+        this.currentClient.getAccount().addMoney(money);
     }
 
-    private void transfer() {
+    private void deduct() {
         Scanner scanner = new Scanner(System.in);
 
         int money = 0;
 
         do{
             System.out.println("----------------");
-            System.out.println("Ingrese un monto para girar:");
+            System.out.println("Ingrese un valor:");
 
             try{
                 money = scanner.nextInt();
@@ -318,14 +282,12 @@ public class Manager {
             }
 
             if( money<= 0 || money>this.currentClient.getAccount().getBalance()) {
-                System.out.println("El monto a girar no puede ser mayor al monto que tiene en la cuenta y tampoco puede ser 0.");
+                System.out.println("El monto no puede ser mayor al saldo y tampoco puede ser 0.");
             }
 
         } while (money<= 0 || money>this.currentClient.getAccount().getBalance());
 
-        this.currentClient.getAccount().toTransfer(money);
-        System.out.println("¡Giro realizado de manera exitosa!");
-        System.out.println("Usted tiene un saldo actual de "+currentClient.getAccount().getBalance()+" pesos.");
-        System.out.println("----------------");
+        this.currentClient.getAccount().deductMoney(money);
     }
+
 }
