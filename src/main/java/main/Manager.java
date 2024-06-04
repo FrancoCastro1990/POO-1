@@ -1,6 +1,7 @@
 package main;
 
-import Account.CreditAccount;
+import Account.InvestmentAccount;
+import Account.LimitDeduct;
 import Account.SavingAccount;
 import Cliente.Client;
 import Account.CheckingAccount;
@@ -26,14 +27,8 @@ public class Manager implements ClientInfo{
             System.out.println("[2] Ver datos de cliente");
 
             if(currentClient.getAccount().getId()!=0) {
-                if(currentClient.getAccount() instanceof CreditAccount){
-                    System.out.println("[3] Pagar credito");
-                    System.out.println("[4] Comprar producto");
-                } else {
-                    System.out.println("[3] Depositar");
-                    System.out.println("[4] Girar");
-                }
-
+                System.out.println("[3] Depositar");
+                System.out.println("[4] Girar");
             }
             System.out.println("[5] Salir");
             System.out.println("ingresa una opcion: ");
@@ -66,17 +61,13 @@ public class Manager implements ClientInfo{
                         break;
                     case 4:
                         if(currentClient.getAccount().getId()!=0) {
-                            if((currentClient.getAccount() instanceof CreditAccount)) {
+                            if(currentClient.getAccount().getBalance()>0) {
+                                System.out.println("Saldo actual $"+currentClient.getAccount().getBalance());
                                 deduct();
                             } else {
-                                if(currentClient.getAccount().getBalance()>0) {
-                                    deduct();
-                                } else {
-                                    System.out.println("No puede girar si no tiene saldo.");
-                                    System.out.println("----------------");
-
-                                    break;
-                                }
+                                System.out.println("No puede girar si no tiene saldo.");
+                                System.out.println("----------------");
+                                break;
                             }
                         } else {
                             System.out.println("Debe registrar un cliente primero.");
@@ -114,7 +105,7 @@ public class Manager implements ClientInfo{
             System.out.println("Seleccione el tipo de cuenta a crear.");
             System.out.println("[1] Cuenta corriente");
             System.out.println("[2] Cuenta de ahorro");
-            System.out.println("[3] Cuenta de credito");
+            System.out.println("[3] Cuenta de Inversion");
 
             try{
                 accountType = scanner.nextInt();
@@ -136,11 +127,11 @@ public class Manager implements ClientInfo{
                 break;
             }
             case 2: {
-                this.currentClient.setAccount(new SavingAccount(generateRandomId(), 0, 0.08));
+                this.currentClient.setAccount(new SavingAccount(generateRandomId(), 0, 0.03));
                 break;
             }
             case 3:{
-                this.currentClient.setAccount(new CreditAccount(generateRandomId(), 600000));
+                this.currentClient.setAccount(new InvestmentAccount(generateRandomId(), 0,0.089));
                 break;
             }
 
@@ -230,12 +221,8 @@ public class Manager implements ClientInfo{
         System.out.println("Direccion: "+currentClient.getAddress());
         System.out.println("Comuna: "+currentClient.getCommune());
         System.out.println("Numero de cuenta: "+currentClient.getAccount().getId());
-        if(currentClient.getAccount() instanceof CreditAccount) {
-            long creditLimit = ((CreditAccount) currentClient.getAccount()).getCreditLimit();
-            System.out.println("Limite de credito: "+creditLimit);
-        }
-        if(currentClient.getAccount() instanceof SavingAccount) {
-            long limitDeduct = ((SavingAccount) currentClient.getAccount()).getLimitDeduct();
+        if(currentClient.getAccount() instanceof LimitDeduct) {
+            long limitDeduct = ((LimitDeduct) currentClient.getAccount()).getLimitDeduct();
             System.out.println("Limite de retiros: "+limitDeduct);
         }
         System.out.println("Saldo: $"+currentClient.getAccount().getBalance());
@@ -248,7 +235,7 @@ public class Manager implements ClientInfo{
 
         do{
             System.out.println("----------------");
-            System.out.println("Ingrese un valor: ");
+            System.out.println("Ingrese el valor a depositar: ");
             try{
                 money = scanner.nextInt();
             } catch (Exception error) {
@@ -272,7 +259,7 @@ public class Manager implements ClientInfo{
 
         do{
             System.out.println("----------------");
-            System.out.println("Ingrese un valor:");
+            System.out.println("Ingrese el valor a girar:");
 
             try{
                 money = scanner.nextInt();

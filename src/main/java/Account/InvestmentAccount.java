@@ -1,12 +1,16 @@
 package Account;
 
-public class SavingAccount extends Account implements LimitDeduct{
+public class InvestmentAccount extends Account implements LimitDeduct{
 
-    private int limitDeduct = 3;
-    public SavingAccount(long id, long balance, double interestRate){
-        super(id, balance, interestRate);
+
+    private int limitDeduct=10;
+    public InvestmentAccount(long id, long balance) {
+        super(id, balance);
     }
 
+    public InvestmentAccount(long id, long balance, double interest) {
+        super(id, balance, interest);
+    }
     public void setLimitDeduct(int limitDeduct) {
         this.limitDeduct = limitDeduct;
     }
@@ -54,7 +58,7 @@ public class SavingAccount extends Account implements LimitDeduct{
     @Override
     protected long calculateInterest(long money) {
         long interestAmount= (long)  (money * getInterest());
-        System.out.println("En tu cuenta de ahorro se generaron $"+interestAmount+" de interes");
+        System.out.println("En tu cuenta de inversion se generaron $"+interestAmount+" de interes");
         return interestAmount;
     }
 }
